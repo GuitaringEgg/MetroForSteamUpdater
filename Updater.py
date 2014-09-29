@@ -7,7 +7,9 @@ import os
 import zipfile
 import distutils.core
 import shutil
-
+from selenium import webdriver
+import time
+import json
 
 class Updater:
 
@@ -16,19 +18,34 @@ class Updater:
         self.version = ''
         self.current_version = '0.0'
         self.skin_folder = ''
-        pass
+        self.dev = False
+
+        os.chdir("data")
 
 
     def Run(self):
+        if not self.LoadConfig():
+            self.GetSteamFolder()
         self.CheckForUpdate()
-        self.DownloadUpdate()
-        self.skin_folder = self.CheckForSteamFolder()
+        #self.DownloadUpdate()
+        self.DownloadUpdateDriver()
         self.GetCurrentVersion()
         self.InstallSkin()
-        self.CleanUp()
+        #self.CleanUp()
 
 
-    def CheckForUpdate(self):
+    def LoadConfig(self):
+        with open('config', 'r') as config:
+            data = json.load(config)
+            self.version = data['version']
+            self.skin_folder = data['skin_folder']
+            self.dev = data['dev']
+            self.debug = data['debug']
+            return True
+
+        return False
+
+    def CheckForUpdateDev(self):
         data = urllib2.urlopen('http://www.metroforsteam.com/')
 
         soup = BeautifulSoup(data.read())
@@ -39,6 +56,10 @@ class Updater:
 
         download = div[0].find_all('a')
         self.link = download[0].get('href')
+
+    def CheckForUpdate(self):
+        pass
+
 
     def GetCurrentVersion(self):
         if os.path.exists(os.path.join(self.skin_folder, 'Metro for Steam\\resource\\menus\\steam.menu')):
@@ -66,13 +87,35 @@ class Updater:
 
         print zipfile.is_zipfile('data.zip')
 
+    def DownloadUpdateDriver(self):
+        fp = webdriver.FirefoxProfile()
+
+        fp.set_preference("browser.download.folderList",2)
+        fp.set_preference("browser.download.manager.showWhenStarting",False)
+        fp.set_preference("browser.download.dir", os.getcwd())
+        fp.set_preference("browser.helperApps.neverAsk.saveToDisk","application/zip")
+        fp.set_preference("browser.helperApps.neverAsk.openFile","application/zip")
+        fp.set_preference("browser.helperApps.alwaysAsk.force", False)
+
+        driver = webdriver.Firefox(firefox_profile=fp)
+        driver.get(self.link)
+        html = driver.page_source
+        soup = BeautifulSoup(html)
+
+        driver.find_elements_by_class_name("dev-page-download")[0].click()
+        os.listdir(".")
+        time.sleep(1)
+        while True in [x.endswith('.part') for x in os.listdir(".")]:
+            print True in [x.endswith('.part') for x in os.listdir(".")]
+        driver.close()
+
 
     # Check that the passed steamapps is valid
-    def CheckForSteamFolder(self):
+    def GetSteamFolder(self):
 
         # Check default location
         if os.path.exists(os.path.join(r'%PROGRAMFILES(x86)%', 'steam\\skins')):
-            return os.path.join(r'%PROGRAMFILES(x86)%', 'steam\\skins')
+            self.skin_folder = os.path.join(r'%PROGRAMFILES(x86)%', 'steam\\skins')
 
         # True to find the folder elsewhere
         else:
@@ -81,15 +124,15 @@ class Updater:
 
             for drive in drives:
                 if os.path.exists(os.path.join(drive, 'Program Files\\steam\\skins')):
-                    return os.path.join(drive, 'Program Files\\steam\\skins')
+                    self.skin_folder = os.path.join(drive, 'Program Files\\steam\\skins')
 
                 elif os.path.exists(os.path.join(drive, 'Program Files (x86)\\steam\\skins')):
-                    return os.path.join(drive, 'Program Files (x86)\\steam\\skins')
+                    self.skin_folder = os.path.join(drive, 'Program Files (x86)\\steam\\skins')
                 elif os.path.exists(os.path.join(drive, 'steam\\skins')):
-                    return os.path.join(drive, 'steam\\skins')
+                    self.skin_folder = os.path.join(drive, 'steam\\skins')
 
         log.error('Steamapps path given does not exist.')
-        return ''
+        self.skin_folder = ''
 
 
 
