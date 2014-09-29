@@ -7,16 +7,15 @@ import os
 import zipfile
 import distutils.core
 import shutil
-from selenium import webdriver
-import time
+
 import json
 
 class Updater:
 
     def __init__(self):
         self.link = ''
-        self.version = ''
-        self.current_version = '0.0'
+        self.current_version = ''
+        self.latest_version = ''
         self.skin_folder = ''
         self.dev = False
 
@@ -27,15 +26,16 @@ class Updater:
         if not self.LoadConfig():
             self.GetSteamFolder()
         self.CheckForUpdate()
-        #self.DownloadUpdate()
-        self.DownloadUpdateDriver()
-        self.GetCurrentVersion()
+
+        if self.current_version != self.latest_version:
+            if self.dev:
+                self.DownloadUpdateDriver()
         self.InstallSkin()
         #self.CleanUp()
 
 
     def LoadConfig(self):
-        with open('config', 'r') as config:
+        with open('config.json', 'r') as config:
             data = json.load(config)
             self.version = data['version']
             self.skin_folder = data['skin_folder']
@@ -58,8 +58,10 @@ class Updater:
         self.link = download[0].get('href')
 
     def CheckForUpdate(self):
-        pass
-
+        latest = urllib2.urlopen('https://raw.githubusercontent.com/GuitaringEgg/MetroForSteamUpdater/master/data/link.json')
+        data = json.loads(latest.read())
+        self.link = data["link"]
+        self.latest_version = data["version"]
 
     def GetCurrentVersion(self):
         if os.path.exists(os.path.join(self.skin_folder, 'Metro for Steam\\resource\\menus\\steam.menu')):
@@ -74,7 +76,6 @@ class Updater:
 
 
     def DownloadUpdate(self):
-        #http://stackoverflow.com/questions/13436418/simulating-clicking-on-a-javascript-link-in-python
         data = urllib2.urlopen(self.link)
         soup = BeautifulSoup(data.read())
 
@@ -87,7 +88,10 @@ class Updater:
 
         print zipfile.is_zipfile('data.zip')
 
-    def DownloadUpdateDriver(self):
+    def DownloadUpdateDev(self):
+        from selenium import webdriver
+        import time
+
         fp = webdriver.FirefoxProfile()
 
         fp.set_preference("browser.download.folderList",2)
@@ -138,6 +142,20 @@ class Updater:
 
     def InstallSkin(self):
         zf = zipfile.ZipFile('data.zip')
+
+        for f in zf.namelist():
+            if f.startswith('Metro for Steam'):
+                if f.endswith('/'):
+                    os.makedirs(f)
+                else:
+                    zf.extract(f)
+
+
+        distutils.dir_util.copy_tree('Metro for Steam', os.path.join(self.skin_folder, 'Metro for Steam'), update=1)
+
+    def InstallSkinDev(self):
+        fn = [f.endswith('.zip') for f in os.listdir('.')]
+        zf = zipfile.ZipFile(fn[0])
 
         for f in zf.namelist():
             if f.startswith('Metro for Steam'):
