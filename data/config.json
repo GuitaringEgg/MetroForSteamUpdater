@@ -1,6 +1,5 @@
 {
-    "version" : "3.8",
-    "skin_folder" : "E:\\steam",
-    "dev" : true,
-    "debug" : false
+    "debug": false,
+    "dev": false,
+    "skin_folder": "E:\\Steam\\skins"
 }
