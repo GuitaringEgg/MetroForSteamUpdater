@@ -113,7 +113,8 @@ class UpdaterGUI(MyFrame1):
         self.SetStatusText("Status")
         event.Skip()
 
-app = wx.App(False)
-frame = UpdaterGUI(None)
-frame.Show()
-app.MainLoop()
+if __name__ == "__main__":
+    app = wx.App(False)
+    frame = UpdaterGUI(None)
+    frame.Show()
+    app.MainLoop()
