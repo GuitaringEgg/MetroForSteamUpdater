@@ -1,4 +1,6 @@
 from Updater import Updater
+import os
+import urllib2
 
 from bs4 import BeautifulSoup
 
@@ -7,6 +9,12 @@ class UpdaterDev(Updater):
 
     def __init__(self):
         Updater.__init__(self)
+
+
+    def RunDev(self):
+        self.CheckForUpdateDev()
+        self.DownloadUpdateDev()
+        self.InstallSkinDev()
 
 
     def CheckForUpdateDev(self):
@@ -78,3 +86,4 @@ class UpdaterDev(Updater):
 
 
 ud = UpdaterDev()
+ud.RunDev()

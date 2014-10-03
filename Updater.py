@@ -2,6 +2,7 @@ import urllib2
 
 import win32api
 import os
+import os.path as path
 import zipfile
 import distutils.core
 import shutil
@@ -77,15 +78,15 @@ class Updater:
 
 
     def GetInstalledVersion(self):
-        if os.path.exists(os.path.join(self.skin_folder, 'Metro for Steam\\resource\\menus\\steam.menu')):
-            with open(os.path.join(self.skin_folder, 'Metro for Steam\\resource\\menus\\steam.menu')) as f:
+        if path.exists(path.join(self.skin_folder, 'Metro for Steam\\resource\\menus\\steam.menu')):
+            with open(path.join(self.skin_folder, 'Metro for Steam\\resource\\menus\\steam.menu')) as f:
                 for line in f:
                     if line.find('text="Metro For Steam - ') != -1:
                         start = line.find('text="Metro For Steam - ') + len('text="Metro For Steam - ')
                         end = line[start:].find('"') + start
                         self.current_version = line[start : end]
                         print line
-                        print os.path.join(self.skin_folder, 'Metro for Steam\\resource\\menus\\steam.menu')
+                        print path.join(self.skin_folder, 'Metro for Steam\\resource\\menus\\steam.menu')
                         print "Current Version: {}".format(self.current_version)
 
 
@@ -98,8 +99,8 @@ class Updater:
     def GetSteamFolder(self):
 
         # Check default location
-        if os.path.exists(os.path.join(r'%PROGRAMFILES(x86)%', 'steam\\skins')):
-            self.skin_folder = os.path.join(r'%PROGRAMFILES(x86)%', 'steam\\skins')
+        if path.exists(path.join(r'%PROGRAMFILES(x86)%', 'steam\\skins')):
+            self.skin_folder = path.join(r'%PROGRAMFILES(x86)%', 'steam\\skins')
 
         # True to find the folder elsewhere
         else:
@@ -107,14 +108,25 @@ class Updater:
             drives = drives.split('\000')[:-1]
 
             for drive in drives:
-                if os.path.exists(os.path.join(drive, 'Program Files\\Steam\\skins')):
-                    self.skin_folder = os.path.join(drive, 'Program Files\\Steam\\skins')
+                if path.exists(path.join(drive, 'Program Files\\Steam\\skins')):
+                    self.skin_folder = path.join(drive, 'Program Files\\Steam\\skins')
 
-                elif os.path.exists(os.path.join(drive, 'Program Files (x86)\\Steam\\skins')):
-                    self.skin_folder = os.path.join(drive, 'Program Files (x86)\\Steam\\skins')
-                elif os.path.exists(os.path.join(drive, 'Steam\\skins')):
-                    self.skin_folder = os.path.join(drive, 'Steam\\skins')
-                print os.path.exists(os.path.join(drive, 'Steam\\skins'))
+                elif path.exists(path.join(drive, 'Program Files (x86)\\Steam\\skins')):
+                    self.skin_folder = path.join(drive, 'Program Files (x86)\\Steam\\skins')
+                elif path.exists(path.join(drive, 'Steam\\skins')):
+                    self.skin_folder = path.join(drive, 'Steam\\skins')
+                print path.exists(path.join(drive, 'Steam\\skins'))
+
+    def SetSteamFolder(self, loc):
+        if path.exists(loc) and loc.endswith('skins'):
+            print loc
+            self.skin_folder = loc
+            return True
+        elif path.exists(path.join(loc, 'skins')):
+            self.skin_folder = path.join(loc, 'skins')
+            return True
+        else:
+            return False
 
 
     def InstallSkin(self):
@@ -128,7 +140,7 @@ class Updater:
                     zf.extract(f)
 
 
-        distutils.dir_util.copy_tree('Metro for Steam', os.path.join(self.skin_folder, 'Metro for Steam'), update=1)
+        distutils.dir_util.copy_tree('Metro for Steam', path.join(self.skin_folder, 'Metro for Steam'), update=1)
 
 
     def CleanUp(self):
