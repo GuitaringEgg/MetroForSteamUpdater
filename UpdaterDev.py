@@ -1,6 +1,10 @@
 from Updater import Updater
 import os
 import urllib2
+import urllib
+import zipfile
+import distutils
+import glob
 
 from bs4 import BeautifulSoup
 
@@ -13,7 +17,7 @@ class UpdaterDev(Updater):
 
     def RunDev(self):
         self.CheckForUpdateDev()
-        self.DownloadUpdateDev()
+        self.DownloadUpdateOld()
         self.InstallSkinDev()
 
 
@@ -21,25 +25,20 @@ class UpdaterDev(Updater):
         data = urllib2.urlopen('http://www.metroforsteam.com/')
 
         soup = BeautifulSoup(data.read())
-        div = soup.find_all(attrs={'class':'left info'})
+        div = soup.find_all(attrs={'id':'date'})
         text = div[0].get_text()
-        self.version = text[text.find('Latest Version: ') + len('Latest Version: '):text.find('Download') - 1]
+        self.version = text
         print "Latest Version: {}".format(self.version)
 
-        download = div[0].find_all('a')
+        download = soup.find_all(attrs={'class':'button'})
+        print download
         self.link = download[0].get('href')
 
 
     def DownloadUpdateOld(self):
         data = urllib2.urlopen(self.link)
-        soup = BeautifulSoup(data.read())
 
-        download = soup.find_all(attrs={'class':'dev-page-button dev-page-button-with-text dev-page-download'})
-        link = download[0].get('href')
-        print link
-        link = 'http://fc09.deviantart.net/fs71/f/2014/267/4/e/metro_for_steam___3_8_by_boneyardbrew-d4u3kjv.zip'
-
-        data = urllib.urlretrieve(link, 'data.zip')
+        data = urllib.urlretrieve(self.link, 'data.zip')
 
         print zipfile.is_zipfile('data.zip')
 
@@ -71,19 +70,15 @@ class UpdaterDev(Updater):
 
 
     def InstallSkinDev(self):
-        fn = [f.endswith('.zip') for f in os.listdir('.')]
+        fn = glob.glob('./*.zip')
         zf = zipfile.ZipFile(fn[0])
 
         for f in zf.namelist():
             if f.startswith('Metro for Steam'):
                 if f.endswith('/'):
-                    os.makedirs(f)
+                    if not os.path.exists(f):
+                        os.makedirs(f)
                 else:
                     zf.extract(f)
 
-
         distutils.dir_util.copy_tree('Metro for Steam', os.path.join(self.skin_folder, 'Metro for Steam'), update=1)
-
-
-ud = UpdaterDev()
-ud.RunDev()

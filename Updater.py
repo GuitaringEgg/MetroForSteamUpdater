@@ -6,8 +6,10 @@ import os.path as path
 import zipfile
 import distutils.core
 import shutil
+import urllib
 
 import json
+from bs4 import BeautifulSoup
 
 class Updater:
 
@@ -19,7 +21,7 @@ class Updater:
         self.dev = False
         self.debug = False
 
-        os.chdir("data")
+        os.chdir("data/")
 
         if not self.LoadConfig():
             self.GetSteamFolder()
@@ -71,10 +73,14 @@ class Updater:
 
 
     def CheckForUpdate(self):
-        latest = urllib2.urlopen('https://raw.githubusercontent.com/GuitaringEgg/MetroForSteamUpdater/master/data/link.json')
-        data = json.loads(latest.read())
-        self.link = data["link"]
-        self.latest_version = data["version"]
+        data = urllib2.urlopen('http://www.metroforsteam.com/')
+
+        soup = BeautifulSoup(data.read())
+
+        self.link = soup.find_all(attrs={'class':'button'})[0].get('href')
+        self.latest_version = soup.find_all(attrs={'id':'date'})[0].get_text()
+        print self.link
+        print self.latest_version
 
 
     def GetInstalledVersion(self):
@@ -97,7 +103,6 @@ class Updater:
 
 
     def GetSteamFolder(self):
-
         # Check default location
         if path.exists(path.join(r'%PROGRAMFILES(x86)%', 'steam\\skins')):
             self.skin_folder = path.join(r'%PROGRAMFILES(x86)%', 'steam\\skins')
@@ -135,7 +140,8 @@ class Updater:
         for f in zf.namelist():
             if f.startswith('Metro for Steam'):
                 if f.endswith('/'):
-                    os.makedirs(f)
+                    if not os.path.exists(f):
+                        os.makedirs(f)
                 else:
                     zf.extract(f)
 

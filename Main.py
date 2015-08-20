@@ -1,6 +1,6 @@
-from Updater import Updater
+from UpdaterDev import UpdaterDev
 
 
 
-updater = Updater()
-updater.Run()
+updater = UpdaterDev()
+updater.RunDev()

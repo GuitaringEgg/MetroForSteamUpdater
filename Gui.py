@@ -1,9 +1,9 @@
 import wx
 from Updater import Updater
-from Frame1 import MyFrame1
+from Frame1 import Window
 
 
-class UpdaterGUI(MyFrame1):
+class UpdaterGUI(Window):
     def __init__( self, parent):
         self.updater = Updater()
         super(UpdaterGUI, self).__init__(parent)

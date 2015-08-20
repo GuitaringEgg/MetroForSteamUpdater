@@ -11,10 +11,10 @@ import wx
 import wx.xrc
 
 ###########################################################################
-## Class MyFrame1
+## Class Window
 ###########################################################################
 
-class MyFrame1 ( wx.Frame ):
+class Window ( wx.Frame ):
 
     def __init__( self, parent ):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 539,311 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
@@ -47,10 +47,13 @@ class MyFrame1 ( wx.Frame ):
 
         bSizer1.Add( bSizer2, 1, wx.EXPAND, 5 )
 
+        icon = wx.Icon('../MetroForSteamUpdater.ico', wx.BITMAP_TYPE_ICO, 16,16)
+
+        self.SetIcon(icon)
 
         self.SetSizer( bSizer1 )
         self.Layout()
-        self.m_statusBar1 = self.CreateStatusBar( 1, wx.ST_SIZEGRIP, wx.ID_ANY )
+        #self.m_statusBar1 = self.CreateStatusBar( 1, wx.ST_SIZEGRIP, wx.ID_ANY )
 
         self.Centre( wx.BOTH )
 
@@ -60,7 +63,7 @@ class MyFrame1 ( wx.Frame ):
         self.m_dirPicker1.Bind( wx.EVT_DIRPICKER_CHANGED, self.UpdateSteamFolder )
         self.m_staticText1.Bind( wx.EVT_PAINT, self.UpdateCurrentVersion )
         self.m_staticText2.Bind( wx.EVT_PAINT, self.UpdateLatestVersion )
-        self.m_statusBar1.Bind( wx.EVT_PAINT, self.UpdateStatusBar )
+        #self.m_statusBar1.Bind( wx.EVT_PAINT, self.UpdateStatusBar )
 
     def __del__( self ):
         pass
